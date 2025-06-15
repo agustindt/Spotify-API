@@ -1,6 +1,6 @@
 export const CLIENT_ID = '26f584098dae4d02b5647086929b483b'
-// Force HTTPS for the redirect to avoid mixed content issues
-export const REDIRECT_URI = window.location.origin.replace(/^http:/, 'https:')
+// Redirect back to the current origin after auth
+export const REDIRECT_URI = window.location.origin
 
 export const SCOPES = [
   'user-read-recently-played',
