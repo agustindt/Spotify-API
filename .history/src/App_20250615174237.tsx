@@ -1,19 +1,16 @@
-// App.tsx
-
 import { useState, useEffect } from 'react'
 import {
   fetchProfile,
   fetchRecentlyPlayed,
   groupTracksByMonth,
-  createPlaylist,
-  PlaylistGroup
+  createPlaylist
 } from './spotify'
 import { login, logout, getStoredToken } from './auth'
 
 function App() {
   const [token, setToken] = useState('')
   const [user, setUser] = useState<any>(null)
-  const [playlists, setPlaylists] = useState<PlaylistGroup[]>([])
+  const [playlists, setPlaylists] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 

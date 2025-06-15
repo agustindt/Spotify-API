@@ -2,6 +2,7 @@ export const CLIENT_ID = '26f584098dae4d02b5647086929b483b'
 // Force HTTPS for the redirect to avoid mixed content issues
 export const REDIRECT_URI = window.location.origin.replace(/^http:/, 'https:')
 
+
 export const SCOPES = [
   'user-read-recently-played',
   'playlist-modify-public',
