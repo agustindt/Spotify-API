@@ -22,6 +22,7 @@ npm run dev
 
 5. Open the app in your browser and click **Login with Spotify**. Authorize the requested scopes when prompted:
 
+
 - `user-read-recently-played`
 - `playlist-modify-public` or `playlist-modify-private`
 
