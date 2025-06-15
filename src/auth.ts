@@ -1,5 +1,6 @@
 export const CLIENT_ID = '26f584098dae4d02b5647086929b483b'
-// Redirect back to the current origin after auth
+// Redirect back to the current origin after auth.
+// This must match a URI whitelisted in your Spotify app settings.
 export const REDIRECT_URI = window.location.origin
 
 export const SCOPES = [

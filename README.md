@@ -18,7 +18,9 @@ npm run dev
 
 3. Add your Spotify application client ID to `src/auth.ts`.
 
-4. Open the app in your browser and click **Login with Spotify**. Authorize the requested scopes when prompted:
+4. In the Spotify Developer Dashboard, add your redirect URI (e.g. `http://localhost:5173`) to the app's list of allowed redirect URIs. The URI must exactly match `REDIRECT_URI` in `src/auth.ts`.
+
+5. Open the app in your browser and click **Login with Spotify**. Authorize the requested scopes when prompted:
 
 
 - `user-read-recently-played`
