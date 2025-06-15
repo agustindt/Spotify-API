@@ -31,4 +31,4 @@ npm run dev
 - `user-read-recently-played`
 - `playlist-modify-public` or `playlist-modify-private`
 
-After logging in, the app will fetch your recent listening history, group tracks by month, and allow you to create playlists for each month. Tracks that belong to multiple genres are placed in a separate "Shared Across Genres" playlist to avoid duplicates in the genre lists.
+After logging in, the app will fetch your recent listening history, group tracks by month, and allow you to create playlists for each month. Tracks that belong to multiple genres are placed in a separate "Shared Across Genres" playlist to avoid duplicates in the genre lists. Songs you listened to multiple times are deduplicated within each playlist, so each track appears only once. Similar or synonymous genres (for example, "hip-hop" and "rap") are automatically combined into a single group to reduce repeated songs.

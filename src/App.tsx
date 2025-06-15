@@ -99,7 +99,7 @@ function App() {
             onClick={() =>
               create(
                 `Monthly ${p.month}`,
-                p.tracks.map(t => `spotify:track:${t.id}`)
+                Array.from(new Set(p.tracks.map(t => `spotify:track:${t.id}`)))
               )
             }
           >
@@ -117,7 +117,7 @@ function App() {
             onClick={() =>
               create(
                 'Shared Across Genres',
-                duplicates.map(t => `spotify:track:${t.id}`)
+                Array.from(new Set(duplicates.map(t => `spotify:track:${t.id}`)))
               )
             }
           >
@@ -136,7 +136,7 @@ function App() {
             onClick={() =>
               create(
                 `Genre ${g.genre}`,
-                g.tracks.map(t => `spotify:track:${t.id}`)
+                Array.from(new Set(g.tracks.map(t => `spotify:track:${t.id}`)))
               )
             }
           >
