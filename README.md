@@ -16,9 +16,11 @@ npm install
 npm run dev
 ```
 
-3. Open the app in your browser and provide a Spotify access token with the following scopes:
+3. Add your Spotify application client ID to `src/auth.ts`.
+
+4. Open the app in your browser and click **Login with Spotify**. Authorize the requested scopes when prompted:
 
 - `user-read-recently-played`
 - `playlist-modify-public` or `playlist-modify-private`
 
-The app will fetch your recent listening history, group tracks by month, and allow you to create playlists for each month.
+After logging in, the app will fetch your recent listening history, group tracks by month, and allow you to create playlists for each month.
