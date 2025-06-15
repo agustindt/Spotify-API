@@ -19,6 +19,30 @@ export interface GenreGroup {
   tracks: Track[]
 }
 
+export interface GenreGroupingResult {
+  genres: GenreGroup[]
+  duplicates: Track[]
+}
+
+/**
+ * Map similar or synonymous genre names to a canonical representation.
+ * This reduces duplication when an artist has multiple closely related
+ * genres such as "hip-hop" and "rap".
+ */
+function canonicalGenre(name: string): string {
+  const lower = name.toLowerCase()
+  if (lower.includes('hip hop') || lower.includes('hip-hop') || lower === 'rap') {
+    return 'hip hop'
+  }
+  if (lower.includes('rock')) return 'rock'
+  if (lower.includes('electro') || lower.includes('edm') || lower.includes('dance')) {
+    return 'electronic'
+  }
+  if (lower.includes('r&b') || lower.includes('rnb')) return 'r&b'
+  if (lower.includes('pop')) return 'pop'
+  return lower
+}
+
 export interface Profile {
   id: string
   display_name: string
@@ -83,14 +107,19 @@ export async function fetchRecentlyPlayed(
 
 export function groupTracksByMonth(tracks: Track[]): PlaylistGroup[] {
   const groups: { [month: string]: Track[] } = {}
+  const seen: { [month: string]: Set<string> } = {}
 
   for (const track of tracks) {
     const date = new Date(track.playedAt)
     const month = date.toLocaleString('default', { month: 'short', year: 'numeric' })
     if (!groups[month]) {
       groups[month] = []
+      seen[month] = new Set()
     }
-    groups[month].push(track)
+    if (!seen[month].has(track.id)) {
+      groups[month].push(track)
+      seen[month].add(track.id)
+    }
   }
 
   return Object.entries(groups).map(([month, tracks]) => ({
@@ -101,14 +130,20 @@ export function groupTracksByMonth(tracks: Track[]): PlaylistGroup[] {
 
 export function groupTracksByGenre(tracks: Track[]): GenreGroup[] {
   const groups: { [genre: string]: Track[] } = {}
+  const seen: { [genre: string]: Set<string> } = {}
 
   for (const track of tracks) {
     if (!track.genres.length) continue
     for (const genre of track.genres) {
-      if (!groups[genre]) {
-        groups[genre] = []
+      const canon = canonicalGenre(genre)
+      if (!groups[canon]) {
+        groups[canon] = []
+        seen[canon] = new Set()
       }
-      groups[genre].push(track)
+      if (!seen[canon].has(track.id)) {
+        groups[canon].push(track)
+        seen[canon].add(track.id)
+      }
     }
   }
 
@@ -118,7 +153,53 @@ export function groupTracksByGenre(tracks: Track[]): GenreGroup[] {
   }))
 }
 
+export function groupTracksByGenreDedup(tracks: Track[]): GenreGroupingResult {
+  const groups: { [genre: string]: Track[] } = {}
+  const seen: { [genre: string]: Set<string> } = {}
+  const trackGenres: Record<string, Set<string>> = {}
+  const trackMap: Record<string, Track> = {}
+
+  for (const track of tracks) {
+    trackMap[track.id] = track
+    if (!track.genres.length) continue
+    const uniqueGenres = Array.from(
+      new Set(track.genres.map(g => canonicalGenre(g)))
+    )
+    for (const genre of uniqueGenres) {
+      if (!groups[genre]) {
+        groups[genre] = []
+        seen[genre] = new Set()
+      }
+      if (!seen[genre].has(track.id)) {
+        groups[genre].push(track)
+        seen[genre].add(track.id)
+      }
+      if (!trackGenres[track.id]) trackGenres[track.id] = new Set()
+      trackGenres[track.id].add(genre)
+    }
+  }
+
+  const duplicateIds = new Set<string>()
+  for (const id in trackGenres) {
+    if (trackGenres[id].size > 1) duplicateIds.add(id)
+  }
+
+  const duplicates: Track[] = Array.from(duplicateIds).map(id => trackMap[id])
+
+  for (const genre in groups) {
+    groups[genre] = groups[genre].filter(t => !duplicateIds.has(t.id))
+  }
+
+  const genres = Object.entries(groups).map(([genre, tracks]) => ({
+    genre,
+    tracks
+  }))
+
+  return { genres, duplicates }
+}
+
 export async function createPlaylist(token: string, userId: string, name: string, uris: string[]) {
+  const uniqueUris = Array.from(new Set(uris))
   const res = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
     method: 'POST',
     headers: {
@@ -129,8 +210,8 @@ export async function createPlaylist(token: string, userId: string, name: string
   })
   if (!res.ok) throw new Error('Failed to create playlist')
   const playlist = await res.json()
-  for (let i = 0; i < uris.length; i += 100) {
-    const chunk = uris.slice(i, i + 100)
+  for (let i = 0; i < uniqueUris.length; i += 100) {
+    const chunk = uniqueUris.slice(i, i + 100)
     const add = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
       method: 'POST',
       headers: {
