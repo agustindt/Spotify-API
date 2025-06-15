@@ -31,17 +31,47 @@ export interface GenreGroupingResult {
  * genres such as "hip-hop" and "rap".
  */
 function canonicalGenre(name: string): string {
-  const lower = name.toLowerCase()
-  if (lower.includes('hip hop') || lower.includes('hip-hop') || lower === 'rap') {
+  const lower = name.toLowerCase().replace(/-/g, ' ')
+
+  // hip hop / rap variations
+  if (
+    lower.includes('hip hop') ||
+    lower.includes('hiphop') ||
+    lower.includes('rap')
+  ) {
     return 'hip hop'
   }
-  if (lower.includes('rock')) return 'rock'
-  if (lower.includes('electro') || lower.includes('edm') || lower.includes('dance')) {
+
+  // rock and related subgenres
+  if (
+    lower.includes('rock') ||
+    lower.includes('punk') ||
+    lower.includes('metal') ||
+    lower.includes('grunge') ||
+    lower.includes('indie')
+  ) {
+    return 'rock'
+  }
+
+  // electronic music umbrella
+  if (
+    lower.includes('electro') ||
+    lower.includes('edm') ||
+    lower.includes('dance') ||
+    lower.includes('house') ||
+    lower.includes('techno') ||
+    lower.includes('electronica')
+  ) {
     return 'electronic'
   }
-  if (lower.includes('r&b') || lower.includes('rnb')) return 'r&b'
+
+  // r&b variations
+  if (lower.includes('r&b') || lower.includes('rnb') || lower.includes('soul')) {
+    return 'r&b'
+  }
+
   if (lower.includes('pop')) return 'pop'
-  return lower
+  return lower.trim()
 }
 export interface Profile {
   id: string
