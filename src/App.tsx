@@ -5,8 +5,10 @@ import {
   fetchProfile,
   fetchRecentlyPlayed,
   groupTracksByMonth,
+  groupTracksByGenre,
   createPlaylist,
-  PlaylistGroup
+  PlaylistGroup,
+  GenreGroup
 } from './spotify'
 import { login, logout, getStoredToken } from './auth'
 
@@ -14,6 +16,7 @@ function App() {
   const [token, setToken] = useState('')
   const [user, setUser] = useState<any>(null)
   const [playlists, setPlaylists] = useState<PlaylistGroup[]>([])
+  const [genres, setGenres] = useState<GenreGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -44,6 +47,8 @@ function App() {
       }
       const groups = groupTracksByMonth(tracks)
       setPlaylists(groups)
+      const genreGroups = groupTracksByGenre(tracks)
+      setGenres(genreGroups)
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -51,11 +56,11 @@ function App() {
     }
   }
 
-  async function create(month: string, uris: string[]) {
+  async function create(name: string, uris: string[]) {
     if (!user) return
     try {
-      await createPlaylist(token, user.id, `Monthly ${month}`, uris)
-      alert(`Playlist for ${month} created!`)
+      await createPlaylist(token, user.id, name, uris)
+      alert(`Playlist ${name} created!`)
     } catch (e: any) {
       alert(`Failed to create playlist: ${e.message}`)
     }
@@ -81,7 +86,32 @@ function App() {
         <div key={p.month} style={{ marginTop: '1rem' }}>
           <h3>{p.month}</h3>
           <p>{p.tracks.length} tracks</p>
-          <button onClick={() => create(p.month, p.tracks.map(t => `spotify:track:${t.id}`))}>
+          <button
+            onClick={() =>
+              create(
+                `Monthly ${p.month}`,
+                p.tracks.map(t => `spotify:track:${t.id}`)
+              )
+            }
+          >
+            Create Playlist
+          </button>
+        </div>
+      ))}
+
+      {genres.length > 0 && <h2>Detected Genres</h2>}
+      {genres.map(g => (
+        <div key={g.genre} style={{ marginTop: '1rem' }}>
+          <h3>{g.genre}</h3>
+          <p>{g.tracks.length} tracks</p>
+          <button
+            onClick={() =>
+              create(
+                `Genre ${g.genre}`,
+                g.tracks.map(t => `spotify:track:${t.id}`)
+              )
+            }
+          >
             Create Playlist
           </button>
         </div>

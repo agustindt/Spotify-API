@@ -19,9 +19,29 @@ export async function fetchRecentlyPlayed(token, after) {
         throw new Error('Failed to fetch recently played tracks');
     }
     const data = await res.json();
+    const artistIds = new Set();
+    for (const item of data.items) {
+        for (const artist of item.track.artists) {
+            artistIds.add(artist.id);
+        }
+    }
+    const idArray = Array.from(artistIds);
+    const artistGenres = {};
+    for (let i = 0; i < idArray.length; i += 50) {
+        const chunk = idArray.slice(i, i + 50).join(',');
+        const resArtists = await fetch(`https://api.spotify.com/v1/artists?ids=${chunk}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!resArtists.ok) {
+            throw new Error('Failed to fetch artist genres');
+        }
+        const artistsData = await resArtists.json();
+        for (const artist of artistsData.artists) {
+            artistGenres[artist.id] = artist.genres;
+        }
+    }
     return data.items.map((item) => ({
         id: item.track.id,
-        playedAt: new Date(item.played_at)
+        playedAt: new Date(item.played_at),
+        genres: item.track.artists.flatMap((a) => artistGenres[a.id] || [])
     }));
 }
 export function groupTracksByMonth(tracks) {
@@ -36,6 +56,23 @@ export function groupTracksByMonth(tracks) {
     }
     return Object.entries(groups).map(([month, tracks]) => ({
         month,
+        tracks
+    }));
+}
+export function groupTracksByGenre(tracks) {
+    const groups = {};
+    for (const track of tracks) {
+        if (!track.genres.length)
+            continue;
+        for (const genre of track.genres) {
+            if (!groups[genre]) {
+                groups[genre] = [];
+            }
+            groups[genre].push(track);
+        }
+    }
+    return Object.entries(groups).map(([genre, tracks]) => ({
+        genre,
         tracks
     }));
 }
