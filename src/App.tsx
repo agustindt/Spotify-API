@@ -8,7 +8,8 @@ import {
   groupTracksByGenre,
   createPlaylist,
   PlaylistGroup,
-  GenreGroup
+  GenreGroup,
+  Track
 } from './spotify'
 import { login, logout, getStoredToken } from './auth'
 
@@ -19,6 +20,11 @@ function App() {
   const [genres, setGenres] = useState<GenreGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  function summarizeArtists(tracks: Track[], limit = 3): string {
+    const names = Array.from(new Set(tracks.flatMap(t => t.artists)))
+    return names.slice(0, limit).join(', ')
+  }
 
   useEffect(() => {
     getStoredToken().then(stored => {
@@ -102,7 +108,10 @@ function App() {
       {genres.length > 0 && <h2>Detected Genres</h2>}
       {genres.map(g => (
         <div key={g.genre} style={{ marginTop: '1rem' }}>
-          <h3>{g.genre}</h3>
+          <h3>
+            {g.genre}
+            {g.tracks.length > 0 && ' - ' + summarizeArtists(g.tracks)}
+          </h3>
           <p>{g.tracks.length} tracks</p>
           <button
             onClick={() =>

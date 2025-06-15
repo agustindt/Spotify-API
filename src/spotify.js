@@ -41,7 +41,9 @@ export async function fetchRecentlyPlayed(token, after) {
     return data.items.map((item) => ({
         id: item.track.id,
         playedAt: new Date(item.played_at),
-        genres: item.track.artists.flatMap((a) => artistGenres[a.id] || [])
+        genres: item.track.artists.flatMap((a) => artistGenres[a.id] || []),
+        name: item.track.name,
+        artists: item.track.artists.map((a) => a.name)
     }));
 }
 export function groupTracksByMonth(tracks) {

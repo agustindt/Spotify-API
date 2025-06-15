@@ -10,6 +10,10 @@ function App() {
     const [genres, setGenres] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    function summarizeArtists(tracks, limit = 3) {
+        const names = Array.from(new Set(tracks.flatMap(t => t.artists)));
+        return names.slice(0, limit).join(', ');
+    }
     useEffect(() => {
         getStoredToken().then(stored => {
             if (stored)
@@ -60,6 +64,6 @@ function App() {
             alert(`Failed to create playlist: ${e.message}`);
         }
     }
-    return (_jsxs("div", { style: { padding: '1rem' }, children: [_jsx("h1", { children: "Spotify Monthly Playlist Creator" }), !token ? (_jsx("button", { onClick: login, children: "Login with Spotify" })) : (_jsxs(_Fragment, { children: [_jsx("button", { onClick: logout, children: "Logout" }), _jsx("button", { onClick: analyze, disabled: loading, children: "Analyze Profile" })] })), error && _jsx("p", { style: { color: 'red' }, children: error }), loading && _jsx("p", { children: "Loading..." }), user && _jsxs("p", { children: ["Logged in as ", user.display_name] }), playlists.map(p => (_jsxs("div", { style: { marginTop: '1rem' }, children: [_jsx("h3", { children: p.month }), _jsxs("p", { children: [p.tracks.length, " tracks"] }), _jsx("button", { onClick: () => create(`Monthly ${p.month}`, p.tracks.map(t => `spotify:track:${t.id}`)), children: "Create Playlist" })] }, p.month))), genres.length > 0 && _jsx("h2", { children: "Detected Genres" }), genres.map(g => (_jsxs("div", { style: { marginTop: '1rem' }, children: [_jsx("h3", { children: g.genre }), _jsxs("p", { children: [g.tracks.length, " tracks"] }), _jsx("button", { onClick: () => create(`Genre ${g.genre}`, g.tracks.map(t => `spotify:track:${t.id}`)), children: "Create Playlist" })] }, g.genre)))] }));
+    return (_jsxs("div", { style: { padding: '1rem' }, children: [_jsx("h1", { children: "Spotify Monthly Playlist Creator" }), !token ? (_jsx("button", { onClick: login, children: "Login with Spotify" })) : (_jsxs(_Fragment, { children: [_jsx("button", { onClick: logout, children: "Logout" }), _jsx("button", { onClick: analyze, disabled: loading, children: "Analyze Profile" })] })), error && _jsx("p", { style: { color: 'red' }, children: error }), loading && _jsx("p", { children: "Loading..." }), user && _jsxs("p", { children: ["Logged in as ", user.display_name] }), playlists.map(p => (_jsxs("div", { style: { marginTop: '1rem' }, children: [_jsx("h3", { children: p.month }), _jsxs("p", { children: [p.tracks.length, " tracks"] }), _jsx("button", { onClick: () => create(`Monthly ${p.month}`, p.tracks.map(t => `spotify:track:${t.id}`)), children: "Create Playlist" })] }, p.month))), genres.length > 0 && _jsx("h2", { children: "Detected Genres" }), genres.map(g => (_jsxs("div", { style: { marginTop: '1rem' }, children: [_jsxs("h3", { children: [g.genre, g.tracks.length > 0 && ' - ' + summarizeArtists(g.tracks)] }), _jsxs("p", { children: [g.tracks.length, " tracks"] }), _jsx("button", { onClick: () => create(`Genre ${g.genre}`, g.tracks.map(t => `spotify:track:${t.id}`)), children: "Create Playlist" })] }, g.genre)))] }));
 }
 export default App;
