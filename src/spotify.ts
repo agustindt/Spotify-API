@@ -24,6 +24,7 @@ export interface GenreGroupingResult {
   duplicates: Track[]
 }
 
+
 /**
  * Map similar or synonymous genre names to a canonical representation.
  * This reduces duplication when an artist has multiple closely related
@@ -42,7 +43,6 @@ function canonicalGenre(name: string): string {
   if (lower.includes('pop')) return 'pop'
   return lower
 }
-
 export interface Profile {
   id: string
   display_name: string
@@ -174,6 +174,42 @@ export function groupTracksByGenreDedup(tracks: Track[]): GenreGroupingResult {
         groups[genre].push(track)
         seen[genre].add(track.id)
       }
+      if (!trackGenres[track.id]) trackGenres[track.id] = new Set()
+      trackGenres[track.id].add(genre)
+    }
+  }
+
+  const duplicateIds = new Set<string>()
+  for (const id in trackGenres) {
+    if (trackGenres[id].size > 1) duplicateIds.add(id)
+  }
+
+  const duplicates: Track[] = Array.from(duplicateIds).map(id => trackMap[id])
+
+  for (const genre in groups) {
+    groups[genre] = groups[genre].filter(t => !duplicateIds.has(t.id))
+  }
+
+  const genres = Object.entries(groups).map(([genre, tracks]) => ({
+    genre,
+    tracks
+  }))
+
+  return { genres, duplicates }
+}
+
+export function groupTracksByGenreDedup(tracks: Track[]): GenreGroupingResult {
+  const groups: { [genre: string]: Track[] } = {}
+  const trackGenres: Record<string, Set<string>> = {}
+  const trackMap: Record<string, Track> = {}
+
+  for (const track of tracks) {
+    trackMap[track.id] = track
+    if (!track.genres.length) continue
+    const uniqueGenres = Array.from(new Set(track.genres))
+    for (const genre of uniqueGenres) {
+      if (!groups[genre]) groups[genre] = []
+      groups[genre].push(track)
       if (!trackGenres[track.id]) trackGenres[track.id] = new Set()
       trackGenres[track.id].add(genre)
     }
