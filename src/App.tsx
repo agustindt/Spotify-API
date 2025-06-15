@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   fetchProfile,
   fetchRecentlyPlayed,
   groupTracksByMonth,
   createPlaylist
 } from './spotify'
+import { login, logout, getStoredToken } from './auth'
 
 function App() {
   const [token, setToken] = useState('')
@@ -12,6 +13,11 @@ function App() {
   const [playlists, setPlaylists] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const stored = getStoredToken()
+    if (stored) setToken(stored)
+  }, [])
 
   async function analyze() {
     setError('')
@@ -54,17 +60,16 @@ function App() {
   return (
     <div style={{ padding: '1rem' }}>
       <h1>Spotify Monthly Playlist Creator</h1>
-      <p>Enter a Spotify access token with the necessary scopes.</p>
-      <input
-        type="text"
-        value={token}
-        onChange={e => setToken(e.target.value)}
-        placeholder="Access Token"
-        style={{ width: '100%' }}
-      />
-      <button onClick={analyze} disabled={!token || loading}>
-        Analyze Profile
-      </button>
+      {!token ? (
+        <button onClick={login}>Login with Spotify</button>
+      ) : (
+        <>
+          <button onClick={logout}>Logout</button>
+          <button onClick={analyze} disabled={loading}>
+            Analyze Profile
+          </button>
+        </>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {loading && <p>Loading...</p>}
       {user && <p>Logged in as {user.display_name}</p>}
