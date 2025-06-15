@@ -18,8 +18,9 @@ function App() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const stored = getStoredToken()
-    if (stored) setToken(stored)
+    getStoredToken().then(stored => {
+      if (stored) setToken(stored)
+    })
   }, [])
 
   async function analyze() {
