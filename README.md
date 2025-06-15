@@ -18,9 +18,7 @@ npm run dev
 
 3. Add your Spotify application client ID to `src/auth.ts`.
 
-4. Make sure your redirect URI uses `https`. The provided helper automatically replaces `http` with `https` during login.
-
-5. Open the app in your browser and click **Login with Spotify**. Authorize the requested scopes when prompted:
+4. Open the app in your browser and click **Login with Spotify**. Authorize the requested scopes when prompted:
 
 
 - `user-read-recently-played`
