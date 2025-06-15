@@ -1,5 +1,7 @@
 export const CLIENT_ID = '<YOUR_SPOTIFY_CLIENT_ID>'
-export const REDIRECT_URI = window.location.origin
+// Force HTTPS for the redirect to avoid mixed content issues
+export const REDIRECT_URI = window.location.origin.replace(/^http:/, 'https:')
+
 export const SCOPES = [
   'user-read-recently-played',
   'playlist-modify-public',
