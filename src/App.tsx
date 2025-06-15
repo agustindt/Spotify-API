@@ -6,6 +6,7 @@ import {
   fetchRecentlyPlayed,
   groupTracksByMonth,
   groupTracksByGenre,
+  groupTracksByGenreDedup,
   createPlaylist,
   PlaylistGroup,
   GenreGroup,
@@ -18,6 +19,7 @@ function App() {
   const [user, setUser] = useState<any>(null)
   const [playlists, setPlaylists] = useState<PlaylistGroup[]>([])
   const [genres, setGenres] = useState<GenreGroup[]>([])
+  const [duplicates, setDuplicates] = useState<Track[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -53,8 +55,9 @@ function App() {
       }
       const groups = groupTracksByMonth(tracks)
       setPlaylists(groups)
-      const genreGroups = groupTracksByGenre(tracks)
-      setGenres(genreGroups)
+      const genreResult = groupTracksByGenreDedup(tracks)
+      setGenres(genreResult.genres)
+      setDuplicates(genreResult.duplicates)
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -106,6 +109,22 @@ function App() {
       ))}
 
       {genres.length > 0 && <h2>Detected Genres</h2>}
+      {duplicates.length > 0 && (
+        <div style={{ marginTop: '1rem' }}>
+          <h3>Shared Across Genres</h3>
+          <p>{duplicates.length} tracks</p>
+          <button
+            onClick={() =>
+              create(
+                'Shared Across Genres',
+                duplicates.map(t => `spotify:track:${t.id}`)
+              )
+            }
+          >
+            Create Playlist
+          </button>
+        </div>
+      )}
       {genres.map(g => (
         <div key={g.genre} style={{ marginTop: '1rem' }}>
           <h3>
