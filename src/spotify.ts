@@ -4,7 +4,9 @@ export interface Track {
   id: string
   playedAt: Date
   genres: string[]
-  // Podés agregar más propiedades como name, artist, etc.
+  // Additional metadata for display purposes
+  name: string
+  artists: string[]
 }
 
 export interface PlaylistGroup {
@@ -73,7 +75,9 @@ export async function fetchRecentlyPlayed(
   return data.items.map((item: any) => ({
     id: item.track.id as string,
     playedAt: new Date(item.played_at),
-    genres: item.track.artists.flatMap((a: any) => artistGenres[a.id] || [])
+    genres: item.track.artists.flatMap((a: any) => artistGenres[a.id] || []),
+    name: item.track.name as string,
+    artists: item.track.artists.map((a: any) => a.name as string)
   }))
 }
 
