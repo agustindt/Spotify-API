@@ -11,14 +11,36 @@ export interface PlaylistGroup {
   tracks: Track[]
 }
 
-export async function fetchProfile(token: string) {
-  // Implementación real
-  return { id: 'user_id', display_name: 'Sample User' }
+export interface Profile {
+  id: string
+  display_name: string
+}
+
+export async function fetchProfile(token: string): Promise<Profile> {
+  const res = await fetch('https://api.spotify.com/v1/me', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!res.ok) {
+    throw new Error('Failed to fetch profile')
+  }
+  return res.json()
 }
 
 export async function fetchRecentlyPlayed(token: string, after: number): Promise<Track[]> {
-  // Implementación real
-  return []
+  const url = new URL('https://api.spotify.com/v1/me/player/recently-played')
+  url.searchParams.set('limit', '50')
+  url.searchParams.set('after', String(after))
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!res.ok) {
+    throw new Error('Failed to fetch recently played tracks')
+  }
+  const data = await res.json()
+  return data.items.map((item: any) => ({
+    id: item.track.id as string,
+    playedAt: new Date(item.played_at)
+  }))
 }
 
 export function groupTracksByMonth(tracks: Track[]): PlaylistGroup[] {
@@ -40,5 +62,26 @@ export function groupTracksByMonth(tracks: Track[]): PlaylistGroup[] {
 }
 
 export async function createPlaylist(token: string, userId: string, name: string, uris: string[]) {
-  // Implementación real
+  const res = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name, public: false })
+  })
+  if (!res.ok) throw new Error('Failed to create playlist')
+  const playlist = await res.json()
+  for (let i = 0; i < uris.length; i += 100) {
+    const chunk = uris.slice(i, i + 100)
+    const add = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ uris: chunk })
+    })
+    if (!add.ok) throw new Error('Failed to add tracks')
+  }
 }
