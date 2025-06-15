@@ -3,11 +3,17 @@
 export interface Track {
   id: string
   playedAt: Date
+  genres: string[]
   // Podés agregar más propiedades como name, artist, etc.
 }
 
 export interface PlaylistGroup {
   month: string
+  tracks: Track[]
+}
+
+export interface GenreGroup {
+  genre: string
   tracks: Track[]
 }
 
@@ -26,7 +32,10 @@ export async function fetchProfile(token: string): Promise<Profile> {
   return res.json()
 }
 
-export async function fetchRecentlyPlayed(token: string, after: number): Promise<Track[]> {
+export async function fetchRecentlyPlayed(
+  token: string,
+  after: number
+): Promise<Track[]> {
   const url = new URL('https://api.spotify.com/v1/me/player/recently-played')
   url.searchParams.set('limit', '50')
   url.searchParams.set('after', String(after))
@@ -37,9 +46,34 @@ export async function fetchRecentlyPlayed(token: string, after: number): Promise
     throw new Error('Failed to fetch recently played tracks')
   }
   const data = await res.json()
+
+  const artistIds = new Set<string>()
+  for (const item of data.items) {
+    for (const artist of item.track.artists) {
+      artistIds.add(artist.id as string)
+    }
+  }
+  const idArray = Array.from(artistIds)
+  const artistGenres: Record<string, string[]> = {}
+  for (let i = 0; i < idArray.length; i += 50) {
+    const chunk = idArray.slice(i, i + 50).join(',')
+    const resArtists = await fetch(
+      `https://api.spotify.com/v1/artists?ids=${chunk}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    if (!resArtists.ok) {
+      throw new Error('Failed to fetch artist genres')
+    }
+    const artistsData = await resArtists.json()
+    for (const artist of artistsData.artists) {
+      artistGenres[artist.id] = artist.genres as string[]
+    }
+  }
+
   return data.items.map((item: any) => ({
     id: item.track.id as string,
-    playedAt: new Date(item.played_at)
+    playedAt: new Date(item.played_at),
+    genres: item.track.artists.flatMap((a: any) => artistGenres[a.id] || [])
   }))
 }
 
@@ -57,6 +91,25 @@ export function groupTracksByMonth(tracks: Track[]): PlaylistGroup[] {
 
   return Object.entries(groups).map(([month, tracks]) => ({
     month,
+    tracks
+  }))
+}
+
+export function groupTracksByGenre(tracks: Track[]): GenreGroup[] {
+  const groups: { [genre: string]: Track[] } = {}
+
+  for (const track of tracks) {
+    if (!track.genres.length) continue
+    for (const genre of track.genres) {
+      if (!groups[genre]) {
+        groups[genre] = []
+      }
+      groups[genre].push(track)
+    }
+  }
+
+  return Object.entries(groups).map(([genre, tracks]) => ({
+    genre,
     tracks
   }))
 }
