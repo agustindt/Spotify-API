@@ -160,6 +160,7 @@ export function groupTracksByGenreDedup(tracks: Track[]): GenreGroupingResult {
 }
 
 export async function createPlaylist(token: string, userId: string, name: string, uris: string[]) {
+  const uniqueUris = Array.from(new Set(uris))
   const res = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
     method: 'POST',
     headers: {
@@ -170,8 +171,8 @@ export async function createPlaylist(token: string, userId: string, name: string
   })
   if (!res.ok) throw new Error('Failed to create playlist')
   const playlist = await res.json()
-  for (let i = 0; i < uris.length; i += 100) {
-    const chunk = uris.slice(i, i + 100)
+  for (let i = 0; i < uniqueUris.length; i += 100) {
+    const chunk = uniqueUris.slice(i, i + 100)
     const add = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
       method: 'POST',
       headers: {
