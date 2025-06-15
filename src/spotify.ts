@@ -28,7 +28,9 @@ export interface GenreGroupingResult {
 /**
  * Map similar or synonymous genre names to a canonical representation.
  * This reduces duplication when an artist has multiple closely related
- * genres such as "hip-hop" and "rap".
+ * styles such as "hip-hop" and "rap" or many jazz subgenres.
+ * Accents and hyphens are removed before matching to handle labels like
+ * "rock clásico" or "jazz fusión".
  */
 function canonicalGenre(name: string): string {
   const lower = name
@@ -69,10 +71,6 @@ function canonicalGenre(name: string): string {
     return 'electronic'
   }
 
-  // r&b variations
-  if (lower.includes('r&b') || lower.includes('rnb') || lower.includes('soul')) {
-    return 'r&b'
-  }
 
   // jazz styles
   if (
@@ -81,10 +79,20 @@ function canonicalGenre(name: string): string {
     lower.includes('swing') ||
     lower.includes('big band') ||
     lower.includes('bossa nova') ||
+    lower.includes('latin jazz') ||
+    lower.includes('jazz latino') ||
+    lower.includes('jazz funk') ||
+    lower.includes('soul jazz') ||
+    lower.includes('smooth jazz') ||
+
     (lower.includes('fusion') && lower.includes('jazz')) ||
     lower.includes('lounge')
   ) {
     return 'jazz'
+  }
+  // r&b variations
+  if (lower.includes('r&b') || lower.includes('rnb') || lower.includes('soul')) {
+    return 'r&b'
   }
 
   if (lower.includes('navidad') || lower.includes('christmas')) {
