@@ -71,6 +71,7 @@ function canonicalGenre(name: string): string {
     return 'electronic'
   }
 
+
   // jazz styles
   if (
     lower.includes('jazz') ||
@@ -83,12 +84,12 @@ function canonicalGenre(name: string): string {
     lower.includes('jazz funk') ||
     lower.includes('soul jazz') ||
     lower.includes('smooth jazz') ||
+
     (lower.includes('fusion') && lower.includes('jazz')) ||
     lower.includes('lounge')
   ) {
     return 'jazz'
   }
-
   // r&b variations
   if (lower.includes('r&b') || lower.includes('rnb') || lower.includes('soul')) {
     return 'r&b'
