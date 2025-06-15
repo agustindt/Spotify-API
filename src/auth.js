@@ -1,6 +1,11 @@
 export const CLIENT_ID = '26f584098dae4d02b5647086929b483b';
-// Force HTTPS for the redirect to avoid mixed content issues
-export const REDIRECT_URI = window.location.origin.replace(/^http:/, 'https:');
+// Redirect back to the current origin after auth.
+// This must match a URI whitelisted in your Spotify app settings and use HTTPS
+// unless the host is a loopback IP.
+const isLoopback = /^(127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+export const REDIRECT_URI = isLoopback
+    ? window.location.origin
+    : window.location.origin.replace(/^http:/, 'https:');
 export const SCOPES = [
     'user-read-recently-played',
     'playlist-modify-public',

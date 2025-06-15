@@ -18,7 +18,7 @@ npm run dev
 
 3. Add your Spotify application client ID to `src/auth.ts`.
 
-4. Make sure your redirect URI uses `https`. The provided helper automatically replaces `http` with `https` during login.
+4. In the Spotify Developer Dashboard, add `http://127.0.0.1:5173` (or another loopback address) to your allowed redirect URIs for local development. **Do not use `localhost` as it is rejected by Spotify.** The value must exactly match `REDIRECT_URI` in `src/auth.ts`. Use `https://` for any non-loopback address.
 
 5. Open the app in your browser and click **Login with Spotify**. Authorize the requested scopes when prompted:
 
